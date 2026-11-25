@@ -15,6 +15,9 @@ it, and each app decides whether it has a menu-bar icon.
 - `JSONStore<T>` + `SaveScheduler`: JSON persistence with debounced saves; unreadable files are backed up, never overwritten.
 - `WidgetFrame`: Codable geometry, with a rescue for windows saved on a missing display.
 - `PreferencesPane` + `PreferencesForm`: a preferences window where you add the rows.
+- `DesktopHost.standardMenuItems()`: the standard app items for any menu. Apps with no menu-bar
+  icon put them in a widget's right-click menu.
+- `PeriodicTask`: refresh on an interval and again after the Mac wakes.
 - `LaunchAtLogin`, `DesktopSettings`, `performStandardEditShortcut`.
 
 ## Using it
@@ -32,6 +35,8 @@ Build a widget app into a signed `.app`:
 Scripts/bundle-app.sh <package-dir> <ExecutableName> [install]
 ```
 
+Apps built on it so far: `dt-stickies` (Desktop Notes) and `dt-claude` (Claude Usage).
+
 The package dir needs an `Info.plist` with `LSUIElement` = true and
 `CFBundleExecutable` = the executable name. See `../dt-stickies` for a complete app.
 
@@ -41,4 +46,4 @@ The package dir needs an `Info.plist` with `LSUIElement` = true and
 Scripts/test.sh   # works with only the Command Line Tools installed
 ```
 
-See `PLAN.md` for the design and what's deferred.
+See `PLAN.md` for the design and what's deferred, and `STUCK.md` for notes on the planned management app.

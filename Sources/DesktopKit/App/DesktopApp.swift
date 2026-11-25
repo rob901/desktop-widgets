@@ -80,7 +80,6 @@ public enum DesktopApp {
 public final class DesktopHost: NSObject, NSApplicationDelegate, NSMenuDelegate {
     public let app: DesktopWidgetApp
     private var statusItem: NSStatusItem?
-    private var launchAtLoginItem: NSMenuItem?
     private var preferences: PreferencesController?
 
     init(app: DesktopWidgetApp) {
@@ -117,31 +116,36 @@ public final class DesktopHost: NSObject, NSApplicationDelegate, NSMenuDelegate 
         let menu = NSMenu()
         menu.delegate = self
         let appItems = app.statusMenuItems()
+        let standard = standardMenuItems(config.standardItems, revealDataTitle: config.revealDataTitle)
         appItems.forEach(menu.addItem)
-
-        var standard: [NSMenuItem] = []
-        let s = config.standardItems
-        if s.contains(.preferences), preferences != nil {
-            standard.append(menuItem("Preferences…", #selector(openPreferences)))
-        }
-        if s.contains(.openAtLogin) {
-            let i = menuItem("Open at Login", #selector(toggleLaunchAtLogin))
-            launchAtLoginItem = i
-            standard.append(i)
-        }
-        if s.contains(.revealData), app.dataFileURL != nil {
-            standard.append(menuItem(config.revealDataTitle, #selector(revealData)))
-        }
-        if !standard.isEmpty {
-            if !appItems.isEmpty { menu.addItem(.separator()) }
-            standard.forEach(menu.addItem)
-        }
-        if s.contains(.quit) {
-            if menu.numberOfItems > 0 { menu.addItem(.separator()) }
-            menu.addItem(menuItem("Quit \(app.info.name)", #selector(quit)))
-        }
+        if !appItems.isEmpty, !standard.isEmpty { menu.addItem(.separator()) }
+        standard.forEach(menu.addItem)
         item.menu = menu
         statusItem = item
+    }
+
+    /// The standard app items (Preferences…, Open at Login, Show data in Finder, Quit), ready to
+    /// add to any menu. Apps without a menu-bar icon put these in a widget's right-click menu.
+    /// Preferences is left out if the app has no preferences pane, and Show… if it has no data file.
+    public func standardMenuItems(_ items: StandardMenuItems = .all,
+                                  revealDataTitle: String = "Show Data in Finder") -> [NSMenuItem] {
+        var result: [NSMenuItem] = []
+        if items.contains(.preferences), preferences != nil {
+            result.append(menuItem("Preferences…", #selector(openPreferences)))
+        }
+        if items.contains(.openAtLogin) {
+            let i = menuItem("Open at Login", #selector(toggleLaunchAtLogin))
+            i.state = LaunchAtLogin.isEnabled ? .on : .off
+            result.append(i)
+        }
+        if items.contains(.revealData), app.dataFileURL != nil {
+            result.append(menuItem(revealDataTitle, #selector(revealData)))
+        }
+        if items.contains(.quit) {
+            if !result.isEmpty { result.append(.separator()) }
+            result.append(menuItem("Quit \(app.info.name)", #selector(quit)))
+        }
+        return result
     }
 
     private func menuItem(_ title: String, _ action: Selector) -> NSMenuItem {
@@ -151,7 +155,8 @@ public final class DesktopHost: NSObject, NSApplicationDelegate, NSMenuDelegate 
     }
 
     public func menuWillOpen(_ menu: NSMenu) {
-        launchAtLoginItem?.state = LaunchAtLogin.isEnabled ? .on : .off
+        let state: NSControl.StateValue = LaunchAtLogin.isEnabled ? .on : .off
+        for i in menu.items where i.action == #selector(toggleLaunchAtLogin) { i.state = state }
     }
 
     @objc private func toggleLaunchAtLogin() { LaunchAtLogin.toggle() }

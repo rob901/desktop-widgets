@@ -53,6 +53,9 @@ public final class WidgetWindow: NSObject, NSWindowDelegate {
 
     public var theme: WidgetTheme { didSet { applyTheme() } }
 
+    /// Header text. Shown while expanded; also while collapsed unless the delegate gives a collapsed title.
+    public var title: String = "" { didSet { refreshTitle() } }
+
     /// The widget's own view, laid out below the header.
     public var contentView: NSView? {
         didSet {
@@ -165,9 +168,9 @@ public final class WidgetWindow: NSObject, NSWindowDelegate {
         delegate?.widgetWindowDidChangeFrame(self)
     }
 
-    /// Re-asks the delegate for the collapsed title.
+    /// Updates the header text (re-asks the delegate for the collapsed title).
     public func refreshTitle() {
-        titleLabel.stringValue = isCollapsed ? (delegate?.widgetWindowCollapsedTitle(self) ?? "") : ""
+        titleLabel.stringValue = isCollapsed ? (delegate?.widgetWindowCollapsedTitle(self) ?? title) : title
     }
 
     private func applyCollapsedState() {

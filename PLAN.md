@@ -238,3 +238,17 @@ Steps 1–7 done. DesktopKit builds with no warnings, and 11 tests pass
 (`Scripts/test.sh`) covering snapping, frame rescue, and the JSON store.
 `dt-stickies` is the first app built on it. Step 8 (the parity check) is a
 hands-on test.
+
+### Added for dt-claude (2026-11-24)
+
+- `WidgetWindow.title`: header text while expanded (also collapsed, if the delegate gives no collapsed title).
+- `DesktopHost.standardMenuItems(_:revealDataTitle:)`: the standard items for any menu. This is how
+  an app with no menu-bar icon offers Preferences, Open at Login, and Quit.
+- `PeriodicTask`: interval timer that also fires after wake and during menu tracking.
+
+Several items from "Deferred" are now handled in the app instead: single-instance
+widget (`JSONStore<WidgetState>` + one `WidgetWindow`) and read-only display views
+(custom drawing in `dt-claude`). If a second display widget needs the same,
+move the chart/stat-tile drawing into the framework.
+
+Next framework app: **Stuck**, the console. See `STUCK.md`.
